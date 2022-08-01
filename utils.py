@@ -1,7 +1,5 @@
-
 import os
 import shutil
-from datetime import datetime
 
 import cv2
 import numpy as np
@@ -11,26 +9,18 @@ from detecto import core, utils, visualize
 
 class UTILS:
     
-    def Get_brightness(self, image_path, key):    
+    def Get_brightness(self, image_path, key, UL, LL):    
         try:
-            
             if os.path.isfile(image_path):
 
-                upper_limit = 155
-                lower_limit = 125
+                upper_limit = float(UL)
+                lower_limit = float(LL)
                 if key == "Glucose":
                     upper_limit = 155
                     lower_limit = 125
 
-
-                start = datetime.now()
-
-                                
                 saturation_pink = 0
                 saturation_red = 0
-
-                brightness_pink = 0 
-                brightness_red = 0
 
                 img = cv2.imread(image_path)
 
@@ -41,8 +31,8 @@ class UTILS:
                 hsv_img = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
                 #cv2.imshow("HSV Image", hsv_img)
 
-                lower_pink = np.array([125, 0, 0])
-                upper_pink = np.array([155, 255, 255])
+                lower_pink = np.array([lower_limit, 0, 0])
+                upper_pink = np.array([upper_limit, 255, 255])
 
                 masking = cv2.inRange(hsv_img, lower_pink, upper_pink)
                 #cv2.imshow("pink Color detection", masking)
@@ -56,13 +46,8 @@ class UTILS:
                         saturation_pink = saturation_pink + result_pink[x,y][1]*result_pink[x,y][0]#*(50 - result_pink[x,y][0])
 
                 print("pink saturation : ",saturation_pink)
-
                 cv2.waitKey(1)
 
-                later = datetime.now()
-                time_taken = (later - start).total_seconds()
-                print("time_taken",time_taken)
-                
             else:
                 print(f"No image generated at {image_path}")
                 saturation_pink = -1
@@ -78,6 +63,9 @@ class UTILS:
         try:
             
             parent_dir = "images\output_images"
+            if not os.path.isdir(parent_dir):
+                os.mkdir(parent_dir)
+
             output_dir = os.path.join(parent_dir, input_image_name)
 
             if os.path.isdir(output_dir):
@@ -169,5 +157,35 @@ class UTILS:
         
         except Exception as e:
             print(e)
-            return str(e)
+            return False
 
+    def get_upper_lower_limits(self, image_path):
+        
+        saturation = 0
+        i=0
+
+        img = cv2.imread(image_path)
+
+        width,height,_ = img.shape
+
+        result = cv2.fastNlMeansDenoisingColored(img,None,20,10,7,21)
+
+        hsv_img = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
+        #cv2.imshow("HSV Image", hsv_img)
+
+        for x in range(width):
+            for y in range(height):
+                i=i+1
+                saturation = saturation + hsv_img[x,y][0]
+
+        avg = saturation/i
+
+        lower_limit = np.array([avg-5, 0, 0])
+        upper_limit = np.array([avg+15, 255, 255])
+
+        # print("lower limit : ",lower_limit)
+        # print("upper limit : ",upper_limit)
+
+        cv2.waitKey(1)
+        
+        return lower_limit, upper_limit

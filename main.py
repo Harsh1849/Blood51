@@ -2,30 +2,50 @@
 # py main.py
 
 import os
+from datetime import datetime
 
+import numpy as np
 import requests
 from flask import Flask, jsonify, request
-from sqlalchemy import null
 
 from utils import UTILS
 
 app = Flask(__name__)
 
+HTML_FORM = """
+        <h1>Upload new File</h1>
+        <form method="post" enctype="multipart/form-data">
+        
+            <label>image_file</label><br>
+            <input type="file" name="image_file"><br><hr>
+
+            <label>key</label><br>
+            <input type="text" name="key"><br><hr>
+            
+            <label>user</label><br>
+            <input type="text" name="user">
+            
+        <input type="submit">
+        </form>
+    """
+
 
 @app.route("/api/brightness", methods=["GET", "POST"])
 def get_img_brightness():
 
-
     print("brightness API call...")
     
     ut = UTILS()
-
     UPLOAD_FOLDER = "images\input_images"
+    if not os.path.isdir(UPLOAD_FOLDER):
+        os.mkdir(UPLOAD_FOLDER)
 
     if request.method == "POST":
 
         key = request.form['key']
         user_name = request.form['user']
+        UL = request.form['UL']
+        LL = request.form['LL']
         
         if "image_file" in request.files:
             image_file = request.files['image_file']
@@ -42,31 +62,18 @@ def get_img_brightness():
         # print('@@@',key)
         # print('@@@',user_name)
 
-        brightness_pink = ut.Get_brightness(image_path, key)
+        brightness_pink = ut.Get_brightness(image_path, key, UL, LL)
         
         return str(brightness_pink)
 
-    return """
-        <h1>Upload new File</h1>
-        <form method="post" enctype="multipart/form-data">
-            <label>image_file</label><br>
-            <input type="file" name="image_file"><br><hr>
-
-            <label>key</label><br>
-            <input type="text" name="key"><br><hr>
-
-            <label>user</label><br>
-            <input type="text" name="user">
-
-            <input type="submit">
-        </form>
-    """
+    return HTML_FORM
     
 
 @app.route("/api/detect_images", methods=["GET", "POST"])
 def detect_images():
     
     ut = UTILS()
+    start = datetime.now()
 
     UPLOAD_FOLDER = "images\input_images"
 
@@ -91,55 +98,74 @@ def detect_images():
         
         if result:
             resp_list = {}
-            for i in range(6):
 
-                list = os.listdir("images\output_images\{0}".format(user_name))
-                number_files = len(list)
+            list = os.listdir("images\output_images\{0}".format(user_name))
+            number_files = len(list)
 
-                if number_files == 6:
-
-                    image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
-
-                    payload = {
-                        "image_file": image_path,
-                        "key": key,
-                        "user": user_name
-                    }
+            if number_files == 6:
+                get_limit_image_path1 = "images\output_images\{0}\{1}.jpg".format(user_name,"1")
+                ul1, ll1 = ut.get_upper_lower_limits(get_limit_image_path1)
+                
+                get_limit_image_path3 = "images\output_images\{0}\{1}.jpg".format(user_name,"3")
+                ul3, ll3 = ut.get_upper_lower_limits(get_limit_image_path3)
+                
+                get_limit_image_path5 = "images\output_images\{0}\{1}.jpg".format(user_name,"5")
+                ul5, ll5 = ut.get_upper_lower_limits(get_limit_image_path5)
+                
+                for i in range(6):
+                    
+                    if i in [0, 1]:
+                        print("get ul and ll of image 0, 1")
+                        image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
+                        payload = {
+                            "image_file": image_path,
+                            "key": key,
+                            "user": user_name,
+                            "UL": np.array(ul1),
+                            "LL": np.array(ll1),
+                        }
+                        
+                    elif i in [2, 3]:
+                        print("get ul and ll of image 2, 3")
+                        image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
+                        payload = {
+                            "image_file": image_path,
+                            "key": key,
+                            "user": user_name,
+                            "UL": np.array(ul3),
+                            "LL": np.array(ll3),
+                        }
+                        
+                    elif i in [4, 5]:
+                        print("get ul and ll of image 4, 5")
+                        image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
+                        payload = {
+                            "image_file": image_path,
+                            "key": key,
+                            "user": user_name,
+                            "UL": np.array(ul5),
+                            "LL": np.array(ll5),
+                        }
                     
                     resp = requests.post(f"http://127.0.0.1:8000/api/brightness", data=payload)
-
                     resp_list.update({
                         i : resp.content.decode("utf-8")
                     })
-                                            
-                else:
-                    resp_list = {"0": "-1", "1": "-1", "2": "-1", "3": "-1", "4": "-1", "5": "-1","message": f"Number of images are {number_files}"}
+
+            else:
+                resp_list = {"0": "-1", "1": "-1", "2": "-1", "3": "-1", "4": "-1", "5": "-1","message": f"Number of images are {number_files}"}
 
         else:
             resp_list = {"0": str(result), "1": str(result), "2": str(result), "3": str(result), "4": str(result), "5": str(result), "message": "Something is wrong with the image."}
 
+        later = datetime.now()
+        time_taken = (later - start).total_seconds()
+        print("time_taken",time_taken)
         print(resp_list)
-
 
         return jsonify(resp_list)
 
-
-    return """
-        <h1>Upload new File</h1>
-        <form method="post" enctype="multipart/form-data">
-        
-            <label>image_file</label><br>
-            <input type="file" name="image_file"><br><hr>
-
-            <label>key</label><br>
-            <input type="text" name="key"><br><hr>
-            
-            <label>user</label><br>
-            <input type="text" name="user">
-            
-        <input type="submit">
-        </form>
-    """
+    return HTML_FORM
 
 
 if __name__ == "__main__":
