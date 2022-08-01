@@ -76,6 +76,8 @@ def detect_images():
     start = datetime.now()
 
     UPLOAD_FOLDER = "images\input_images"
+    if not os.path.isdir(UPLOAD_FOLDER):
+        os.mkdir(UPLOAD_FOLDER)
 
     if request.method == "POST":
         if "image_file" not in request.files:
