@@ -2,6 +2,7 @@
 # py main.py
 
 import os
+import shutil
 from datetime import datetime
 
 import numpy as np
@@ -105,26 +106,42 @@ def detect_images():
             number_files = len(list)
 
             if number_files == 6:
+                output_dir_limits = "images\output_images\{0}".format(user_name)
                 get_limit_image_path1 = "images\output_images\{0}\{1}.jpg".format(user_name,"1")
+                get_limit_image_path1 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path1, image_no="1")
+                print(get_limit_image_path1)
+                
+                get_limit_image_path3 = "images\output_images\{0}\{1}.jpg".format(user_name,"3")
+                get_limit_image_path3 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path3, image_no="3")
+                print(get_limit_image_path3)
+                
+                get_limit_image_path5 = "images\output_images\{0}\{1}.jpg".format(user_name,"5")
+                get_limit_image_path5 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path5, image_no="5")
+                print(get_limit_image_path5)
+                
+
+
                 ll1, ul1 = ut.get_upper_lower_limits(get_limit_image_path1)
                 print("---------------------------------------")
                 print("ll1: ", ll1)
                 print("ul1: ", ul1)
                 print("---------------------------------------")
                 
-                get_limit_image_path3 = "images\output_images\{0}\{1}.jpg".format(user_name,"3")
                 ll3, ul3 = ut.get_upper_lower_limits(get_limit_image_path3)
                 print("---------------------------------------")
                 print("ll3: ", ll3)
                 print("ul3: ", ul3)
                 print("---------------------------------------")
                 
-                get_limit_image_path5 = "images\output_images\{0}\{1}.jpg".format(user_name,"5")
                 ll5, ul5 = ut.get_upper_lower_limits(get_limit_image_path5)
                 print("---------------------------------------")
                 print("ll5: ", ll5)
                 print("ul5: ", ul5)
                 print("---------------------------------------")
+                
+                delete_dir = "images\output_images\{0}\cropped_images".format(user_name)
+                if os.path.isdir(delete_dir):
+                    shutil.rmtree(delete_dir)
                 
                 for i in range(6):
                     

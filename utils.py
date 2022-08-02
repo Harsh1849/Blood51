@@ -158,6 +158,24 @@ class UTILS:
         except Exception as e:
             print(e)
             return False
+      
+    def crop_image(self, output_dir, image_path, image_no):
+        img = cv2.imread(image_path)
+
+        height,width,_ = img.shape
+
+        cropped_img = img[int(0.8*height):height, 0:width] 
+
+        output_dir = os.path.join(output_dir, "cropped_images")
+        if not os.path.isdir(output_dir):
+            os.mkdir(output_dir)
+        else:
+            print("dir exists...")
+            
+        name = f"{output_dir}\{str(image_no)}.jpg"
+        cv2.imwrite(name, cropped_img)
+        
+        return name
 
     def get_upper_lower_limits(self, image_path):
         
