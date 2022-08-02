@@ -9,15 +9,15 @@ from detecto import core, utils, visualize
 
 class UTILS:
     
-    def Get_brightness(self, image_path, key, UL, LL):    
+    def get_saturation_pink(self, image_path, key, LL, UL):    
         try:
             if os.path.isfile(image_path):
 
-                upper_limit = float(UL)
                 lower_limit = float(LL)
+                upper_limit = float(UL)
                 if key == "Glucose":
-                    upper_limit = 155
                     lower_limit = 125
+                    upper_limit = 155
 
                 saturation_pink = 0
                 saturation_red = 0
@@ -58,7 +58,7 @@ class UTILS:
             
         return str(saturation_pink)
             
-    def Generate_images(self, input_image, input_image_name):
+    def generate_images(self, input_image, input_image_name):
         
         try:
             
@@ -183,8 +183,11 @@ class UTILS:
         lower_limit = np.array([avg-5, 0, 0])
         upper_limit = np.array([avg+15, 255, 255])
 
+        # print("---------------------------------------")
+        # print(image_path)
         # print("lower limit : ",lower_limit)
         # print("upper limit : ",upper_limit)
+        # print("---------------------------------------")
 
         cv2.waitKey(1)
         

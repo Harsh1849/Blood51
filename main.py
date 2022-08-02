@@ -62,9 +62,9 @@ def get_img_brightness():
         # print('@@@',key)
         # print('@@@',user_name)
 
-        brightness_pink = ut.Get_brightness(image_path, key, UL, LL)
+        saturation_pink = ut.get_saturation_pink(image_path, key, LL,UL)
         
-        return str(brightness_pink)
+        return str(saturation_pink)
 
     return HTML_FORM
     
@@ -96,7 +96,7 @@ def detect_images():
         # print('@@@',user_name)
 
         
-        result = ut.Generate_images(image_path, user_name)
+        result = ut.generate_images(image_path, user_name)
         
         if result:
             resp_list = {}
@@ -106,18 +106,30 @@ def detect_images():
 
             if number_files == 6:
                 get_limit_image_path1 = "images\output_images\{0}\{1}.jpg".format(user_name,"1")
-                ul1, ll1 = ut.get_upper_lower_limits(get_limit_image_path1)
+                ll1, ul1 = ut.get_upper_lower_limits(get_limit_image_path1)
+                print("---------------------------------------")
+                print("ll1: ", ll1)
+                print("ul1: ", ul1)
+                print("---------------------------------------")
                 
                 get_limit_image_path3 = "images\output_images\{0}\{1}.jpg".format(user_name,"3")
-                ul3, ll3 = ut.get_upper_lower_limits(get_limit_image_path3)
+                ll3, ul3 = ut.get_upper_lower_limits(get_limit_image_path3)
+                print("---------------------------------------")
+                print("ll3: ", ll3)
+                print("ul3: ", ul3)
+                print("---------------------------------------")
                 
                 get_limit_image_path5 = "images\output_images\{0}\{1}.jpg".format(user_name,"5")
-                ul5, ll5 = ut.get_upper_lower_limits(get_limit_image_path5)
+                ll5, ul5 = ut.get_upper_lower_limits(get_limit_image_path5)
+                print("---------------------------------------")
+                print("ll5: ", ll5)
+                print("ul5: ", ul5)
+                print("---------------------------------------")
                 
                 for i in range(6):
                     
                     if i in [0, 1]:
-                        print("get ul and ll of image 0, 1")
+                        print("@@@@@ get ul and ll of image 0, 1 @@@@@")
                         image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
                         payload = {
                             "image_file": image_path,
@@ -128,7 +140,7 @@ def detect_images():
                         }
                         
                     elif i in [2, 3]:
-                        print("get ul and ll of image 2, 3")
+                        print("@@@@@ get ul and ll of image 2, 3 @@@@@")
                         image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
                         payload = {
                             "image_file": image_path,
@@ -139,7 +151,7 @@ def detect_images():
                         }
                         
                     elif i in [4, 5]:
-                        print("get ul and ll of image 4, 5")
+                        print("@@@@@ get ul and ll of image 4, 5 @@@@@")
                         image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
                         payload = {
                             "image_file": image_path,
@@ -162,8 +174,8 @@ def detect_images():
 
         later = datetime.now()
         time_taken = (later - start).total_seconds()
-        print("time_taken",time_taken)
-        print(resp_list)
+        print("\ntime_taken", time_taken)
+        print("\n", resp_list)
 
         return jsonify(resp_list)
 
