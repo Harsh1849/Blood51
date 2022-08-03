@@ -30,44 +30,6 @@ HTML_FORM = """
         </form>
     """
 
-
-@app.route("/api/saturation", methods=["GET", "POST"])
-def get_img_saturation():
-
-    print("saturation API call...")
-    
-    ut = UTILS()
-    UPLOAD_FOLDER = "images\input_images"
-    if not os.path.isdir(UPLOAD_FOLDER):
-        os.mkdir(UPLOAD_FOLDER)
-
-    if request.method == "POST":
-
-        key = request.form['key']
-        user_name = request.form['user']
-        UL = request.form['UL']
-        LL = request.form['LL']
-        
-        if "image_file" in request.files:
-            image_file = request.files['image_file']
-            image_path = os.path.join(UPLOAD_FOLDER, user_name + ".jpg")
-            # image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
-            image_file.save(image_path)
-        elif "image_file" in request.form:
-            image_path = request.form['image_file']
-        else:
-            return "there is no image_file in form!"
-            
-
-        # print('@@@',image_path)
-        # print('@@@',key)
-        # print('@@@',user_name)
-
-        saturation_pink = ut.get_saturation_pink(image_path, key, LL, UL, user_name)
-        
-        return str(saturation_pink)
-
-    return HTML_FORM
     
 
 @app.route("/api/generate_images", methods=["GET", "POST"])
@@ -91,11 +53,6 @@ def generate_images():
         image_path = os.path.join(UPLOAD_FOLDER, user_name + ".jpg")
         # image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
         image_file.save(image_path)
-    
-        # print('@@@',image_path)
-        # print('@@@',image_file)
-        # print('@@@',user_name)
-
         
         result = ut.generate_images(image_path, user_name)
         
@@ -153,39 +110,20 @@ def generate_images():
                     if i in [0, 1]:
                         print("@@@@@ get ul and ll of image 0, 1 @@@@@")
                         image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
-                        payload = {
-                            "image_file": image_path,
-                            "key": key,
-                            "user": user_name,
-                            "UL": str(ul1),
-                            "LL": str(ll1),
-                        }
+                        resp = ut.get_saturation_pink(image_path, key, ll1, ul1, user_name)
                         
                     elif i in [2, 3]:
                         print("@@@@@ get ul and ll of image 2, 3 @@@@@")
                         image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
-                        payload = {
-                            "image_file": image_path,
-                            "key": key,
-                            "user": user_name,
-                            "UL": str(ul3),
-                            "LL": str(ll3),
-                        }
-                        
+                        resp = ut.get_saturation_pink(image_path, key, ll3, ul3, user_name)
+
                     elif i in [4, 5]:
                         print("@@@@@ get ul and ll of image 4, 5 @@@@@")
                         image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
-                        payload = {
-                            "image_file": image_path,
-                            "key": key,
-                            "user": user_name,
-                            "UL": str(ul5),
-                            "LL": str(ll5),
-                        }
-                    
-                    resp = requests.post(f"http://127.0.0.1:8000/api/saturation", data=payload)
+                        resp = ut.get_saturation_pink(image_path, key, ll5, ul5, user_name)
+
                     resp_list.update({
-                        i : resp.content.decode("utf-8")
+                        i: str(resp)
                     })
 
             else:

@@ -13,8 +13,6 @@ class UTILS:
         try:
             if os.path.isfile(image_path):
 
-                lower_limit = LL
-                upper_limit = UL
 
                 saturation_pink = 0
                 saturation_red = 0
@@ -28,11 +26,12 @@ class UTILS:
                 hsv_img = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
                 #cv2.imshow("HSV Image", hsv_img)
 
-                lower_pink = np.array(lower_limit)
-                upper_pink = np.array(upper_limit)
 
-                print("saturation_pink func", np.array(lower_pink))
-                print("saturation_pink func", np.array(upper_pink))
+                lower_pink = np.array(LL)
+                upper_pink = np.array(UL)
+
+                print("saturation_pink func", lower_pink)
+                print("saturation_pink func", upper_pink)
 
 
                 masking = cv2.inRange(hsv_img, lower_pink, upper_pink)
@@ -229,7 +228,7 @@ class UTILS:
 
         lower_limit = np.array([min_h, min_s, 0])
         upper_limit = np.array([max_h, 255, 255])
-
+        
 
         print("---------------------------------------")
         print(image_path)
