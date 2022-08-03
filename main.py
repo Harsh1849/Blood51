@@ -31,10 +31,10 @@ HTML_FORM = """
     """
 
 
-@app.route("/api/brightness", methods=["GET", "POST"])
-def get_img_brightness():
+@app.route("/api/saturation", methods=["GET", "POST"])
+def get_img_saturation():
 
-    print("brightness API call...")
+    print("saturation API call...")
     
     ut = UTILS()
     UPLOAD_FOLDER = "images\input_images"
@@ -63,15 +63,15 @@ def get_img_brightness():
         # print('@@@',key)
         # print('@@@',user_name)
 
-        saturation_pink = ut.get_saturation_pink(image_path, key, LL,UL)
+        saturation_pink = ut.get_saturation_pink(image_path, key, LL, UL, user_name)
         
         return str(saturation_pink)
 
     return HTML_FORM
     
 
-@app.route("/api/detect_images", methods=["GET", "POST"])
-def detect_images():
+@app.route("/api/generate_images", methods=["GET", "POST"])
+def generate_images():
     
     ut = UTILS()
     start = datetime.now()
@@ -109,15 +109,12 @@ def detect_images():
                 output_dir_limits = "images\output_images\{0}".format(user_name)
                 get_limit_image_path1 = "images\output_images\{0}\{1}.jpg".format(user_name,"1")
                 get_limit_image_path1 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path1, image_no="1")
-                print(get_limit_image_path1)
                 
                 get_limit_image_path3 = "images\output_images\{0}\{1}.jpg".format(user_name,"3")
                 get_limit_image_path3 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path3, image_no="3")
-                print(get_limit_image_path3)
                 
                 get_limit_image_path5 = "images\output_images\{0}\{1}.jpg".format(user_name,"5")
                 get_limit_image_path5 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path5, image_no="5")
-                print(get_limit_image_path5)
                 
 
 
@@ -139,9 +136,17 @@ def detect_images():
                 print("ul5: ", ul5)
                 print("---------------------------------------")
                 
-                delete_dir = "images\output_images\{0}\cropped_images".format(user_name)
-                if os.path.isdir(delete_dir):
-                    shutil.rmtree(delete_dir)
+                # delete_dir = "images\output_images\{0}\cropped_images".format(user_name)
+                # if os.path.isdir(delete_dir):
+                #     shutil.rmtree(delete_dir)
+
+
+                reaction_dir = "images\\output_images\\{0}\\reaction".format(user_name)
+                if os.path.isdir(reaction_dir):
+                    shutil.rmtree(reaction_dir)
+                    os.mkdir(reaction_dir)
+                else:
+                    os.mkdir(reaction_dir)
                 
                 for i in range(6):
                     
@@ -152,8 +157,8 @@ def detect_images():
                             "image_file": image_path,
                             "key": key,
                             "user": user_name,
-                            "UL": np.array(ul1),
-                            "LL": np.array(ll1),
+                            "UL": str(ul1),
+                            "LL": str(ll1),
                         }
                         
                     elif i in [2, 3]:
@@ -163,8 +168,8 @@ def detect_images():
                             "image_file": image_path,
                             "key": key,
                             "user": user_name,
-                            "UL": np.array(ul3),
-                            "LL": np.array(ll3),
+                            "UL": str(ul3),
+                            "LL": str(ll3),
                         }
                         
                     elif i in [4, 5]:
@@ -174,11 +179,11 @@ def detect_images():
                             "image_file": image_path,
                             "key": key,
                             "user": user_name,
-                            "UL": np.array(ul5),
-                            "LL": np.array(ll5),
+                            "UL": str(ul5),
+                            "LL": str(ll5),
                         }
                     
-                    resp = requests.post(f"http://127.0.0.1:8000/api/brightness", data=payload)
+                    resp = requests.post(f"http://127.0.0.1:8000/api/saturation", data=payload)
                     resp_list.update({
                         i : resp.content.decode("utf-8")
                     })

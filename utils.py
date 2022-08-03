@@ -9,15 +9,12 @@ from detecto import core, utils, visualize
 
 class UTILS:
     
-    def get_saturation_pink(self, image_path, key, LL, UL):    
+    def get_saturation_pink(self, image_path, key, LL, UL, user_name):    
         try:
             if os.path.isfile(image_path):
 
-                lower_limit = float(LL)
-                upper_limit = float(UL)
-                if key == "Glucose":
-                    lower_limit = 125
-                    upper_limit = 155
+                lower_limit = LL
+                upper_limit = UL
 
                 saturation_pink = 0
                 saturation_red = 0
@@ -31,15 +28,40 @@ class UTILS:
                 hsv_img = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
                 #cv2.imshow("HSV Image", hsv_img)
 
-                lower_pink = np.array([lower_limit, 0, 0])
-                upper_pink = np.array([upper_limit, 255, 255])
+                lower_pink = np.array(lower_limit)
+                upper_pink = np.array(upper_limit)
+
+                print("saturation_pink func", np.array(lower_pink))
+                print("saturation_pink func", np.array(upper_pink))
+
 
                 masking = cv2.inRange(hsv_img, lower_pink, upper_pink)
                 #cv2.imshow("pink Color detection", masking)
                 result_pink = cv2.bitwise_and(img, img, mask=masking)
 
-                half_pink = cv2.resize(result_pink, (0, 0), fx = 0.1, fy = 0.1) #resizing the image
-                cv2.imshow("Reacted area - pink", half_pink)
+                # half_pink = cv2.resize(result_pink, (0, 0), fx = 0.1, fy = 0.1) #resizing the image
+                # cv2.imshow("Reacted area - pink", result_pink)
+                               
+                reaction_dir = "images\\output_images\\{0}\\reaction".format(user_name)
+                os.path.join(reaction_dir, "Reacted0.jpg")
+                if not os.path.exists(os.path.join(reaction_dir, "Reacted0.jpg")):
+                    cv2.imwrite(os.path.join(reaction_dir, "Reacted0.jpg"), result_pink)
+
+                elif not os.path.exists(os.path.join(reaction_dir, "Reacted1.jpg")):
+                    cv2.imwrite(os.path.join(reaction_dir, "Reacted1.jpg"), result_pink)
+
+                elif not os.path.exists(os.path.join(reaction_dir, "Reacted2.jpg")):
+                    cv2.imwrite(os.path.join(reaction_dir, "Reacted2.jpg"), result_pink)
+
+                elif not os.path.exists(os.path.join(reaction_dir, "Reacted3.jpg")):
+                    cv2.imwrite(os.path.join(reaction_dir, "Reacted3.jpg"), result_pink)
+
+                elif not os.path.exists(os.path.join(reaction_dir, "Reacted4.jpg")):
+                    cv2.imwrite(os.path.join(reaction_dir, "Reacted4.jpg"), result_pink)
+
+                elif not os.path.exists(os.path.join(reaction_dir, "Reacted5.jpg")):
+                    cv2.imwrite(os.path.join(reaction_dir, "Reacted5.jpg"), result_pink)
+
 
                 for x in range(width):
                     for y in range(height):
@@ -164,7 +186,7 @@ class UTILS:
 
         height,width,_ = img.shape
 
-        cropped_img = img[int(0.8*height):height, 0:width] 
+        cropped_img = img[int(0.7*height):int(0.9*height), int(0.2*width):int(0.8*width)] 
 
         output_dir = os.path.join(output_dir, "cropped_images")
         if not os.path.isdir(output_dir):
@@ -179,12 +201,13 @@ class UTILS:
 
     def get_upper_lower_limits(self, image_path):
         
-        saturation = 0
-        i=0
+        min_s = 30
+        min_h = 255
+        max_h = 0
 
         img = cv2.imread(image_path)
 
-        width,height,_ = img.shape
+        height,width,_ = img.shape
 
         result = cv2.fastNlMeansDenoisingColored(img,None,20,10,7,21)
 
@@ -193,19 +216,26 @@ class UTILS:
 
         for x in range(width):
             for y in range(height):
-                i=i+1
-                saturation = saturation + hsv_img[x,y][0]
 
-        avg = saturation/i
+                if (hsv_img[y,x][1] < min_s):
+                    min_s = hsv_img[y,x][1]
 
-        lower_limit = np.array([avg-5, 0, 0])
-        upper_limit = np.array([avg+15, 255, 255])
+                if (hsv_img[y,x][0] < min_h):
+                    min_h = hsv_img[y,x][0]
 
-        # print("---------------------------------------")
-        # print(image_path)
-        # print("lower limit : ",lower_limit)
-        # print("upper limit : ",upper_limit)
-        # print("---------------------------------------")
+                if (hsv_img[y,x][0] > max_h):
+                    max_h = hsv_img[y,x][0]
+
+
+        lower_limit = np.array([min_h, min_s, 0])
+        upper_limit = np.array([max_h, 255, 255])
+
+
+        print("---------------------------------------")
+        print(image_path)
+        print("lower limit : ",lower_limit)
+        print("upper limit : ",upper_limit)
+        print("---------------------------------------")
 
         cv2.waitKey(1)
         
