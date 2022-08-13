@@ -67,7 +67,6 @@ class UTILS:
                         saturation_pink = saturation_pink + result_pink[x,y][1]*result_pink[x,y][0]#*(50 - result_pink[x,y][0])
 
                 print("pink saturation : ",saturation_pink)
-                cv2.waitKey(1)
 
             else:
                 print(f"No image generated at {image_path}")
@@ -162,7 +161,6 @@ class UTILS:
                 tmp_img = cv2.rectangle(bgr_img.copy(), start_point, end_point, color, 2)
                 cv2.namedWindow("window_name", cv2.WINDOW_NORMAL) 
                 # cv2.imshow("window_name", tmp_img)
-                cv2.waitKey(1)
                 
                 crop_img = bgr_img[y1:y2, x1:x2]
                 #index = tmp_box_original.index(box)
@@ -227,7 +225,7 @@ class UTILS:
 
 
         lower_limit = np.array([min_h, min_s, 0])
-        upper_limit = np.array([max_h, 255, 255])
+        upper_limit = np.array([max_h+10, 255, 255])
         
 
         print("---------------------------------------")
@@ -236,6 +234,5 @@ class UTILS:
         print("upper limit : ",upper_limit)
         print("---------------------------------------")
 
-        cv2.waitKey(1)
         
         return lower_limit, upper_limit
