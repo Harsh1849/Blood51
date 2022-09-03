@@ -1,9 +1,11 @@
+import math
 import os
 import shutil
-import math
+
 import cv2
 import numpy as np
 import pandas as pd
+import sympy as sym
 from detecto import core, utils, visualize
 
 
@@ -26,7 +28,7 @@ class UTILS:
                 os.mkdir(output_dir)
                 
                 
-            model = core.Model.load('model_weights.pth', ['obj_bottom','obj_mid','obj_top'])
+            model = core.Model.load('model_weights.pth', ['1','2','3','4'])
 
             # Specify the path to your image
             image = utils.read_image(input_image)
@@ -36,7 +38,7 @@ class UTILS:
             labels, boxes, scores = predictions
 
 
-            thresh=0.7
+            thresh=0.45
             filtered_indices=np.where(scores>thresh)
             filtered_scores=scores[filtered_indices]
             filtered_boxes=boxes[filtered_indices]
@@ -91,34 +93,54 @@ class UTILS:
                 num=num+1  
             
             # visualize.show_labeled_image(image, filtered_boxes, filtered_labels)
-            return True
+            return "done"
         
         except Exception as e:
             print("@@@Error in generate images: ", e)
-            return False
+            return str(e)
 
 
-    def cropping(self, image_path):
+    def cropping(self, image_path, out_dir, image_number):
+        print(image_path)
         img = cv2.imread(image_path)
         height,width,_ = img.shape
-        cropped_img = img[int(0.7*height):int(0.9*height), int(0.3*width):int(0.7*width)] 
 
+        cropped_img = img[int(0.7*height):int(0.9*height), int(0.3*width):int(0.7*width)] 
         g_value =0
         i=0
 
         height2,width2,_ = cropped_img.shape
-        result = cv2.fastNlMeansDenoisingColored(cropped_img,None,20,10,7,21)
+        result = cv2.fastNlMeansDenoisingColored(img,None,20,10,7,21)
 
         for y in range(height2):
             for x in range(width2):
                 i=i+1
-                g_value = g_value + result[y,x][1]
+                g_value = g_value + result[y,x][2]
+
+        out_dir = os.path.join(out_dir, "cropped_images")
+        if not os.path.isdir(out_dir):
+            os.mkdir(out_dir)
+
+        name = os.path.join(out_dir, str(image_number) + ".jpg")
+        cv2.imwrite(name, cropped_img)
 
         return g_value/i
 
     
-    def get_conc(self, g_value1, g_value2, g_value3):
-        standard = 100
-        conc = math.log(g_value1/g_value2)/math.log(g_value3/g_value2)*standard
+    def get_conc(self, g_value1, g_value2, g_value3, g_value4):
+        std = 100
+        std_half = std/2
+
+        m,c = sym.symbols('m,c')
+
+        eq1 = sym.Eq(0-(math.log(g_value3/g_value2)),(m*std_half)+c)
+        eq2 = sym.Eq(0-(math.log(g_value4/g_value2)),(m*std)+c)
+
+        result = sym.solve([eq1,eq2],(m,c),dict=True)
+        print("result: ", result)
+
+        conc = ((0-math.log(g_value1/g_value2))-c)/m
+        conc = [conc.subs(r) for r in result][0]
+
 
         return conc
