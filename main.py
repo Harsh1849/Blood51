@@ -32,7 +32,7 @@ HTML_FORM = """
 
     
 
-@app.route("/api/generate_images", methods=["GET", "POST"])
+@app.route("/api/blood51", methods=["GET", "POST"])
 def generate_images():
     
     ut = UTILS()
@@ -47,8 +47,8 @@ def generate_images():
             return "There is no image_file in form!"
 
         image_file = request.files['image_file']
-        user_name = request.form['user']
-        key = request.form['key']
+        user_name = str(request.form['user']).strip()
+        key = str(request.form['key']).strip()
 
         image_path = os.path.join(UPLOAD_FOLDER, user_name + ".jpg")
         # image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
@@ -58,79 +58,44 @@ def generate_images():
         
         if result:
             resp_list = {}
-
-            list = os.listdir("images\output_images\{0}".format(user_name))
+            user_output_folder = "images\output_images\{0}".format(user_name)
+            list = os.listdir(user_output_folder)
             number_files = len(list)
 
-            if number_files == 6:
-                output_dir_limits = "images\output_images\{0}".format(user_name)
-                get_limit_image_path1 = "images\output_images\{0}\{1}.jpg".format(user_name,"1")
-                get_limit_image_path1 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path1, image_no="1")
+            if number_files == 9:
                 
-                get_limit_image_path3 = "images\output_images\{0}\{1}.jpg".format(user_name,"3")
-                get_limit_image_path3 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path3, image_no="3")
+                g_value_1 = ut.cropping("images/output_images/{0}/1.jpg".format(user_name))
+                g_value_2 = ut.cropping("images/output_images/{0}/2.jpg".format(user_name))
+                g_value_3 = ut.cropping("images/output_images/{0}/3.jpg".format(user_name))
+                conc123 = ut.get_conc(g_value_1, g_value_2, g_value_3)
+
+                g_value_4 = ut.cropping("images/output_images/{0}/4.jpg".format(user_name))
+                g_value_5 = ut.cropping("images/output_images/{0}/5.jpg".format(user_name))
+                g_value_6 = ut.cropping("images/output_images/{0}/6.jpg".format(user_name))
+                conc456 = ut.get_conc(g_value_4, g_value_5, g_value_6)
+
+                g_value_7 = ut.cropping("images/output_images/{0}/7.jpg".format(user_name))
+                g_value_8 = ut.cropping("images/output_images/{0}/8.jpg".format(user_name))
+                g_value_9 = ut.cropping("images/output_images/{0}/9.jpg".format(user_name))
+                conc789 = ut.get_conc(g_value_7, g_value_8, g_value_9)
+
+                print("g_value_1", g_value_1)
+                print("g_value_2", g_value_2)
+                print("g_value_3", g_value_3)
+                print("g_value_4", g_value_4)
+                print("g_value_5", g_value_5)
+                print("g_value_6", g_value_6)
+                print("g_value_7", g_value_7)
+                print("g_value_8", g_value_8)
+                print("g_value_9", g_value_9)
+
+                resp_list.update({"1": str(conc123), "2": str(conc456), "3": str(conc789)})
                 
-                get_limit_image_path5 = "images\output_images\{0}\{1}.jpg".format(user_name,"5")
-                get_limit_image_path5 = ut.crop_image(output_dir=output_dir_limits, image_path=get_limit_image_path5, image_no="5")
-                
-
-
-                ll1, ul1 = ut.get_upper_lower_limits(get_limit_image_path1)
-                print("---------------------------------------")
-                print("ll1: ", ll1)
-                print("ul1: ", ul1)
-                print("---------------------------------------")
-                
-                ll3, ul3 = ut.get_upper_lower_limits(get_limit_image_path3)
-                print("---------------------------------------")
-                print("ll3: ", ll3)
-                print("ul3: ", ul3)
-                print("---------------------------------------")
-                
-                ll5, ul5 = ut.get_upper_lower_limits(get_limit_image_path5)
-                print("---------------------------------------")
-                print("ll5: ", ll5)
-                print("ul5: ", ul5)
-                print("---------------------------------------")
-                
-                # delete_dir = "images\output_images\{0}\cropped_images".format(user_name)
-                # if os.path.isdir(delete_dir):
-                #     shutil.rmtree(delete_dir)
-
-
-                reaction_dir = "images\\output_images\\{0}\\reaction".format(user_name)
-                if os.path.isdir(reaction_dir):
-                    shutil.rmtree(reaction_dir)
-                    os.mkdir(reaction_dir)
-                else:
-                    os.mkdir(reaction_dir)
-                
-                for i in range(6):
-                    
-                    if i in [0, 1]:
-                        print("@@@@@ get ul and ll of image 0, 1 @@@@@")
-                        image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
-                        resp = ut.get_saturation_pink(image_path, key, ll1, ul1, user_name)
-                        
-                    elif i in [2, 3]:
-                        print("@@@@@ get ul and ll of image 2, 3 @@@@@")
-                        image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
-                        resp = ut.get_saturation_pink(image_path, key, ll3, ul3, user_name)
-
-                    elif i in [4, 5]:
-                        print("@@@@@ get ul and ll of image 4, 5 @@@@@")
-                        image_path = "images\output_images\{0}\{1}.jpg".format(user_name,i)
-                        resp = ut.get_saturation_pink(image_path, key, ll5, ul5, user_name)
-
-                    resp_list.update({
-                        i: str(resp)
-                    })
-
             else:
-                resp_list = {"0": "-1", "1": "-1", "2": "-1", "3": "-1", "4": "-1", "5": "-1","message": f"Number of images are {number_files}"}
+                resp_list = {"1": "-1", "2": "-1", "3": "-1", "message": f"Number of images are {number_files}"}
 
         else:
-            resp_list = {"0": str(result), "1": str(result), "2": str(result), "3": str(result), "4": str(result), "5": str(result), "message": "Something is wrong with the image."}
+            resp_list = {"1": str(result), "2": str(result), "3": str(result), "message": "Something is wrong with the image."}
 
         later = datetime.now()
         time_taken = (later - start).total_seconds()
