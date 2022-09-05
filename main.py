@@ -44,7 +44,9 @@ def generate_images():
 
         image_file = request.files['image_file']
         user_name = str(request.form['user']).strip()
-        key = str(request.form['key']).strip()
+        BGR_key = eval(request.form['BGR_key']) 
+        std_value = eval(request.form['std']) 
+        print(BGR_key)
 
         image_path = os.path.join(UPLOAD_FOLDER, user_name + ".jpg")
         image_file.save(image_path)
@@ -52,42 +54,62 @@ def generate_images():
         result = ut.generate_images(image_path, user_name)
         
         if result == "done":
-            resp_list = {}
             user_output_folder = "images\output_images\{0}".format(user_name)
             list = os.listdir(user_output_folder)
             number_files = len(list)
 
-            if number_files == 8:
+            resp_list = {}
+            image_number = 1
+            BGR_index = 0
+            resp_index = 1
+            std_index = 0
+            if number_files == len(BGR_key) * 4:
                 
-                g_value_1 = ut.cropping("images/output_images/{0}/1.jpg".format(user_name), user_output_folder, "1")
-                g_value_2 = ut.cropping("images/output_images/{0}/2.jpg".format(user_name), user_output_folder, "2")
-                g_value_3 = ut.cropping("images/output_images/{0}/3.jpg".format(user_name), user_output_folder, "3")
-                g_value_4 = ut.cropping("images/output_images/{0}/4.jpg".format(user_name), user_output_folder, "4")
-                conc1234 = ut.get_conc(g_value_1, g_value_2, g_value_3, g_value_4)
+                for i in range(len(BGR_key)):
+                    if str(BGR_key[BGR_index]).lower() == "creatinine":
+                        BGR_value = 0
+                    elif str(BGR_key[BGR_index]).lower() == "glucose":
+                        BGR_value = 1
 
-                g_value_5 = ut.cropping("images/output_images/{0}/5.jpg".format(user_name), user_output_folder, "5")
-                g_value_6 = ut.cropping("images/output_images/{0}/6.jpg".format(user_name), user_output_folder, "6")
-                g_value_7 = ut.cropping("images/output_images/{0}/7.jpg".format(user_name), user_output_folder, "7")
-                g_value_8 = ut.cropping("images/output_images/{0}/8.jpg".format(user_name), user_output_folder, "8")
-                conc5678 = ut.get_conc(g_value_5, g_value_6, g_value_7, g_value_8)
+                    g_value_1 = ut.cropping("images/output_images/{0}/{1}.jpg".format(user_name, image_number), user_output_folder, image_number, BGR_value)
+                    g_value_2 = ut.cropping("images/output_images/{0}/{1}.jpg".format(user_name, image_number+1), user_output_folder, image_number+1, BGR_value)
+                    g_value_3 = ut.cropping("images/output_images/{0}/{1}.jpg".format(user_name, image_number+2), user_output_folder, image_number+2, BGR_value)
+                    g_value_4 = ut.cropping("images/output_images/{0}/{1}.jpg".format(user_name, image_number+3), user_output_folder, image_number+3, BGR_value)
+                    conc1234 = ut.get_conc(g_value_1, g_value_2, g_value_3, g_value_4, std_value[std_index])
 
-                
-                print("g_value_1", g_value_1)
-                print("g_value_2", g_value_2)
-                print("g_value_3", g_value_3)
-                print("g_value_4", g_value_4)
-                print("g_value_5", g_value_5)
-                print("g_value_6", g_value_6)
-                print("g_value_7", g_value_7)
-                print("g_value_8", g_value_8)
+                    print("---------------------")
+                    print("BGR_value: -> ", BGR_value)
+                    print("std_value: -> ", std_value[std_index])
+                    print(f"g_value_{image_number}", g_value_1)
+                    print(f"g_value_{image_number+1}", g_value_2)
+                    print(f"g_value_{image_number+2}", g_value_3)
+                    print(f"g_value_{image_number+3}", g_value_4)
+                    print("---------------------")
 
-                resp_list.update({"1": str(conc1234), "2": str(conc5678)})
+                    resp_list.update({str(resp_index): str(conc1234)})
+
+                    image_number = image_number + 4
+                    BGR_index = BGR_index + 1
+                    resp_index = resp_index + 1
+                    std_index = std_index + 1
                 
             else:
-                resp_list = {"1": "-1", "2": "-1", "message": f"Number of images are {number_files}"}
+                resp_list = {}
+                i = 1
+                for i in range(len(BGR_key)):
+                    resp_list.update({str(i): "-1"})
+                    i = i+1
+                
+                resp_list.update({"message": f"Number of images are {number_files}."})
 
         else:
-            resp_list = {"1": str(result), "2": str(result), "message": "Something is wrong with the image."}
+            resp_list = {}
+            i = 1
+            for i in range(len(BGR_key)):
+                resp_list.update({str(i): str(result)})
+                i = i+1
+            
+            resp_list.update({"message": "Something is wrong with the image."})
 
         later = datetime.now()
         time_taken = (later - start).total_seconds()

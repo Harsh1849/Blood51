@@ -38,7 +38,7 @@ class UTILS:
             labels, boxes, scores = predictions
 
 
-            thresh=0.45
+            thresh=0.48
             filtered_indices=np.where(scores>thresh)
             filtered_scores=scores[filtered_indices]
             filtered_boxes=boxes[filtered_indices]
@@ -100,22 +100,22 @@ class UTILS:
             return str(e)
 
 
-    def cropping(self, image_path, out_dir, image_number):
+    def cropping(self, image_path, out_dir, image_number, BGR_values):
         print(image_path)
         img = cv2.imread(image_path)
         height,width,_ = img.shape
 
-        cropped_img = img[int(0.7*height):int(0.9*height), int(0.3*width):int(0.7*width)] 
+        cropped_img = img[int(0.6*height):int(0.9*height), int(0.1*width):int(0.9*width)] 
         g_value =0
         i=0
 
         height2,width2,_ = cropped_img.shape
-        result = cv2.fastNlMeansDenoisingColored(img,None,20,10,7,21)
+        result = cv2.fastNlMeansDenoisingColored(cropped_img,None,20,10,7,21)
 
         for y in range(height2):
             for x in range(width2):
                 i=i+1
-                g_value = g_value + result[y,x][2]
+                g_value = g_value + result[y,x][BGR_values]
 
         out_dir = os.path.join(out_dir, "cropped_images")
         if not os.path.isdir(out_dir):
@@ -127,8 +127,8 @@ class UTILS:
         return g_value/i
 
     
-    def get_conc(self, g_value1, g_value2, g_value3, g_value4):
-        std = 100
+    def get_conc(self, g_value1, g_value2, g_value3, g_value4, std):
+        # std = 100
         std_half = std/2
 
         m,c = sym.symbols('m,c')
